@@ -12,29 +12,39 @@ func main() {
 	content, _ := ioutil.ReadFile("input.txt")
 	arr := strings.Split(string(content), "\n")
 
-	count := flag.Int("count", 2, "how much numbers should sum to 2020")
-	search := flag.Int("seach", 2020, "how much numbers should sum to 2020")
+	count := flag.Int("count", 2, "how much numbers should sum up to searched number")
+	search := flag.Int("search", 2020, "search number")
 	flag.Parse()
 
-	loop(arr, 0, *count, []int{}, *search)
-}
+	matching := collectMatching(arr, 0, *count, *search, []int{})
 
-func loop(input []string, startIndex, count int, collection []int, search int) {
-	for i := startIndex; i < len(input); i++ {
-		s := input[i]
-		number, _ := strconv.Atoi(s)
-		if len(collection) < count-1 {
-			loop(input, i+1, count, append(collection, number), search)
-		} else {
-			tmp := append(collection, number)
-			if sum(tmp) == search {
-				log.Printf(ouput(tmp, " + "), sum(tmp))
-				log.Printf(ouput(tmp, " * "), multiply(tmp))
-			}
-		}
+	for _, match := range matching {
+		log.Printf(ouput(match, " + "), sum(match))
+		log.Printf(ouput(match, " * "), multiply(match))
 	}
 }
 
+func collectMatching(input []string, startIndex, count, search int, collection []int) (matching [][]int) {
+	for i := startIndex; i < len(input); i++ {
+		number, _ := strconv.Atoi(input[i])
+		if len(collection)+1 < count {
+			matching = append(
+				matching,
+				collectMatching(input, i+1, count, search, append(collection, number))...,
+			)
+		} else {
+			collection := append(collection, number)
+			if sum(collection) == search {
+				matching = append(matching, collection)
+			}
+		}
+	}
+	return matching
+}
+
+/**
+ *	HELPERS
+ */
 func sum(input []int) (result int) {
 	for _, i := range input {
 		result += i
