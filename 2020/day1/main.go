@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -19,8 +19,8 @@ func main() {
 	matching := collectMatching(inputNumbers, 0, *count, *search, []int{})
 
 	for _, match := range matching {
-		log.Printf(ouput(match, " + "), sum(match))
-		log.Printf(ouput(match, " * "), multiply(match))
+		fmt.Println(ouput(match, " + ", sum(match)))
+		fmt.Println(ouput(match, " * ", multiply(match)))
 	}
 }
 
@@ -60,11 +60,11 @@ func multiply(input []int) (result int) {
 	return result
 }
 
-func ouput(input []int, seperator string) (template string) {
+func ouput(input []int, seperator string, result int) (template string) {
 	numbers := []string{}
 	for _, i := range input {
 		numbers = append(numbers, strconv.Itoa(i))
 	}
 	template = strings.Join(numbers, seperator)
-	return template + " = %d"
+	return template + " = " + strconv.Itoa(result)
 }
