@@ -10,13 +10,13 @@ import (
 
 func main() {
 	content, _ := ioutil.ReadFile("input.txt")
-	arr := strings.Split(string(content), "\n")
+	inputNumbers := strings.Split(string(content), "\n")
 
 	count := flag.Int("count", 2, "how much numbers should sum up to searched number")
 	search := flag.Int("search", 2020, "search number")
 	flag.Parse()
 
-	matching := collectMatching(arr, 0, *count, *search, []int{})
+	matching := collectMatching(inputNumbers, 0, *count, *search, []int{})
 
 	for _, match := range matching {
 		log.Printf(ouput(match, " + "), sum(match))
