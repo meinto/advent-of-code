@@ -21,21 +21,12 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		re := regexp.MustCompile(`^([0-9]*)-`)
-		match := re.FindStringSubmatch(line)[1]
-		firstNumber, err := strconv.Atoi(match)
+		firstNumber, err := strconv.Atoi(findMatch(line, `^([0-9]*)-`))
 		checkError(err)
-
-		re = regexp.MustCompile(`-([0-9]+)`)
-		match = re.FindStringSubmatch(line)[1]
-		secondNumber, err := strconv.Atoi(match)
+		secondNumber, err := strconv.Atoi(findMatch(line, `-([0-9]+)`))
 		checkError(err)
-
-		re = regexp.MustCompile(`([a-z]):`)
-		char := re.FindStringSubmatch(line)[1]
-
-		re = regexp.MustCompile(`: ([a-z]*)$`)
-		pass := re.FindStringSubmatch(line)[1]
+		char := findMatch(line, `([a-z]):`)
+		pass := findMatch(line, `: ([a-z]*)$`)
 
 		countedChars := strings.Count(pass, char)
 		if countedChars >= firstNumber && countedChars <= secondNumber {
@@ -65,4 +56,12 @@ func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func findMatch(line, pattern string) string {
+	re := regexp.MustCompile(pattern)
+	if len(re.FindStringSubmatch(line)) < 2 {
+		log.Fatal("cannot find submatch in line:", line, "\n", "with pattern:", pattern)
+	}
+	return re.FindStringSubmatch(line)[1]
 }
