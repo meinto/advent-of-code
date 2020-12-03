@@ -60,10 +60,7 @@ func secondValidationRule(pass, char string, firstIndex, secondIndex int) bool {
 	if secondIndex <= len(pass) {
 		secondCharMatch = string(pass[secondIndex-1]) == char
 	}
-	if (firstCharMatch == true || secondCharMatch == true) && firstCharMatch != secondCharMatch {
-		return true
-	}
-	return false
+	return firstCharMatch != secondCharMatch
 }
 
 /**
