@@ -15,8 +15,12 @@ func main() {
 	checkError(err)
 	defer file.Close()
 
-	validValidation1 := 0
-	validValidation2 := 0
+	validForFirstRule, validForSecondRule := validate(file)
+	fmt.Println("valid for first validation rule:", validForFirstRule)
+	fmt.Println("valid for second validation rule:", validForSecondRule)
+}
+
+func validate(file *os.File) (validForFirstRule, validForSecondRule int) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -28,25 +32,38 @@ func main() {
 		char := findMatch(line, `([a-z]):`)
 		pass := findMatch(line, `: ([a-z]*)$`)
 
-		countedChars := strings.Count(pass, char)
-		if countedChars >= firstNumber && countedChars <= secondNumber {
-			validValidation1++
+		if firstValidationRule(pass, char, firstNumber, secondNumber) {
+			validForFirstRule++
 		}
 
-		firstCharMatch := false
-		secondCharMatch := false
-		if firstNumber <= len(pass) {
-			firstCharMatch = string(pass[firstNumber-1]) == char
-		}
-		if firstNumber <= len(pass) {
-			secondCharMatch = string(pass[secondNumber-1]) == char
-		}
-		if (firstCharMatch == true || secondCharMatch == true) && firstCharMatch != secondCharMatch {
-			validValidation2++
+		if secondValidationRule(pass, char, firstNumber, secondNumber) {
+			validForSecondRule++
 		}
 	}
-	fmt.Println("valid for first validation rule:", validValidation1)
-	fmt.Println("valid for second validation rule:", validValidation2)
+	return validForFirstRule, validForSecondRule
+}
+
+func firstValidationRule(pass, char string, min, max int) bool {
+	countedChars := strings.Count(pass, char)
+	if countedChars >= min && countedChars <= max {
+		return true
+	}
+	return false
+}
+
+func secondValidationRule(pass, char string, firstIndex, secondIndex int) bool {
+	firstCharMatch := false
+	secondCharMatch := false
+	if firstIndex <= len(pass) {
+		firstCharMatch = string(pass[firstIndex-1]) == char
+	}
+	if secondIndex <= len(pass) {
+		secondCharMatch = string(pass[secondIndex-1]) == char
+	}
+	if (firstCharMatch == true || secondCharMatch == true) && firstCharMatch != secondCharMatch {
+		return true
+	}
+	return false
 }
 
 /**
