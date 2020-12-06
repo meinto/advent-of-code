@@ -30,20 +30,6 @@ func main() {
 	fmt.Println("passports with extended validation rules:", passportsWithExtededValidation)
 }
 
-func getFields(passwort string) (fieldMap map[string]string) {
-	rows := strings.Split(passwort, "\n")
-	fieldMap = make(map[string]string)
-	for _, r := range rows {
-		fields := strings.Split(r, " ")
-		for _, f := range fields {
-			key := strings.Split(f, ":")[0]
-			val := strings.Split(f, ":")[1]
-			fieldMap[key] = val
-		}
-	}
-	return fieldMap
-}
-
 func getPassportsWithExpectedRequiredFields(passports []string) int {
 	validPassports := len(passports)
 	for _, p := range passports {
@@ -72,6 +58,20 @@ func getPassportsWithExtendedValidation(passports []string) int {
 		}
 	}
 	return validPassports
+}
+
+func getFields(passwort string) (fieldMap map[string]string) {
+	rows := strings.Split(passwort, "\n")
+	fieldMap = make(map[string]string)
+	for _, r := range rows {
+		fields := strings.Split(r, " ")
+		for _, f := range fields {
+			key := strings.Split(f, ":")[0]
+			val := strings.Split(f, ":")[1]
+			fieldMap[key] = val
+		}
+	}
+	return fieldMap
 }
 
 /**
