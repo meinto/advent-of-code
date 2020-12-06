@@ -23,35 +23,20 @@ func main() {
 	content, _ := ioutil.ReadFile("input.txt")
 	passports := strings.Split(string(content), "\n\n")
 
-	passportsWithExptectedRequiredFields := getPassportsWithExpectedRequiredFields(passports)
-	passportsWithExtededValidation := getPassportsWithExtendedValidation(passports)
+	passportsWithExptectedRequiredFields := validatePassports(passports, false)
+	passportsWithExtededValidation := validatePassports(passports, true)
 
 	fmt.Println("passports with expected requiredFields:", passportsWithExptectedRequiredFields)
 	fmt.Println("passports with extended validation rules:", passportsWithExtededValidation)
 }
 
-func getPassportsWithExpectedRequiredFields(passports []string) int {
-	validPassports := len(passports)
-	for _, p := range passports {
-		fields := getFields(p)
-		for requiredFieldName := range fieldValidations {
-			_, ok := fields[requiredFieldName]
-			if !ok {
-				validPassports--
-				break
-			}
-		}
-	}
-	return validPassports
-}
-
-func getPassportsWithExtendedValidation(passports []string) int {
+func validatePassports(passports []string, validateValues bool) int {
 	validPassports := len(passports)
 	for _, p := range passports {
 		fields := getFields(p)
 		for requiredFieldName, validate := range fieldValidations {
 			val, ok := fields[requiredFieldName]
-			if !ok || !validate(val) {
+			if !ok || (validateValues && !validate(val)) {
 				validPassports--
 				break
 			}
