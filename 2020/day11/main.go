@@ -36,67 +36,30 @@ func calcOccupiedSeats(lines []string, seats map[int]map[int]*Place, maxLookArou
 	occupationChanged := true
 	for occupationChanged {
 		occupationChanged = false
+
+		activeChanCount := 0
+		occupationChangedChan := make(chan bool)
+
 		for y, line := range lines {
 			for x := range line {
-				p := seats[y][x]
-				if p.Type == SEAT {
-					lookAround := 1
-					matchInDirection := []int{-1, -1, -1, -1, -1, -1, -1, -1, -1}
-					for {
-						if maxLookAround > 0 && lookAround > maxLookAround {
-							break
-						} else if maxLookAround < 0 &&
-							y+lookAround > len(lines)-1 &&
-							y-lookAround < 0 &&
-							x+lookAround > len(line)-1 &&
-							x-lookAround < 0 {
-							break
-						}
-						direction := 0
-						for yi := y - lookAround; yi <= y+lookAround; yi += lookAround {
-							for xi := x - lookAround; xi <= x+lookAround; xi += lookAround {
-								if yi >= 0 &&
-									yi < len(lines) &&
-									xi >= 0 &&
-									xi < len(line) &&
-									(yi != y || xi != x) {
-									place := seats[yi][xi]
-									if place.Type == SEAT && place.State == OCCUPIED {
-										if matchInDirection[direction] < 0 {
-											matchInDirection[direction] = 1
-										}
-									} else if place.Type == SEAT && place.State == EMPTY {
-										if matchInDirection[direction] < 0 {
-											matchInDirection[direction] = 0
-										}
-									}
-								}
-								direction++
-							}
-						}
-						lookAround++
-					}
+				activeChanCount++
+				go processSeat(seats, y, x, len(lines), len(line), maxLookAround, maxAdjacentOccupiedSeats, occupationChangedChan)
+			}
+		}
 
-					adjacentOccupiedSeats := 0
-					for _, match := range matchInDirection {
-						if match > 0 {
-							adjacentOccupiedSeats += match
-						}
-					}
-
-					if adjacentOccupiedSeats == 0 && p.State != OCCUPIED {
-						occupationChanged = true
-						p.NextState = OCCUPIED
-					} else if adjacentOccupiedSeats >= maxAdjacentOccupiedSeats && p.State != EMPTY {
-						occupationChanged = true
-						p.NextState = EMPTY
-					}
+		for activeChanCount > 0 {
+			select {
+			case changed := <-occupationChangedChan:
+				if changed {
+					occupationChanged = true
 				}
+				activeChanCount--
 			}
 		}
 
 		// printSeats(lines, seats)
 
+		// apply next state
 		for y, line := range lines {
 			for x := range line {
 				s := seats[y][x]
@@ -118,6 +81,69 @@ func calcOccupiedSeats(lines []string, seats map[int]map[int]*Place, maxLookArou
 		}
 	}
 	return occupiedSeats
+}
+
+func processSeat(
+	seats map[int]map[int]*Place,
+	y, x, maxY, maxX,
+	maxLookAround, maxAdjacentOccupiedSeats int,
+	occupationChangedChan chan bool) {
+	occupationChanged := false
+	p := seats[y][x]
+	if p.Type == SEAT {
+		lookAround := 1
+		matchInDirection := []int{-1, -1, -1, -1, -1, -1, -1, -1, -1}
+		for {
+			if maxLookAround > 0 && lookAround > maxLookAround {
+				break
+			} else if maxLookAround < 0 &&
+				y+lookAround > maxY &&
+				y-lookAround < 0 &&
+				x+lookAround > maxX &&
+				x-lookAround < 0 {
+				break
+			}
+			direction := 0
+			for yi := y - lookAround; yi <= y+lookAround; yi += lookAround {
+				for xi := x - lookAround; xi <= x+lookAround; xi += lookAround {
+					if yi >= 0 &&
+						yi < maxY &&
+						xi >= 0 &&
+						xi < maxX &&
+						(yi != y || xi != x) {
+						place := seats[yi][xi]
+						if place.Type == SEAT && place.State == OCCUPIED {
+							if matchInDirection[direction] < 0 {
+								matchInDirection[direction] = 1
+							}
+						} else if place.Type == SEAT && place.State == EMPTY {
+							if matchInDirection[direction] < 0 {
+								matchInDirection[direction] = 0
+							}
+						}
+					}
+					direction++
+				}
+			}
+			lookAround++
+		}
+
+		adjacentOccupiedSeats := 0
+		for _, match := range matchInDirection {
+			if match > 0 {
+				adjacentOccupiedSeats += match
+			}
+		}
+
+		if adjacentOccupiedSeats == 0 && p.State != OCCUPIED {
+			occupationChanged = true
+			p.NextState = OCCUPIED
+		} else if adjacentOccupiedSeats >= maxAdjacentOccupiedSeats && p.State != EMPTY {
+			occupationChanged = true
+			p.NextState = EMPTY
+		}
+	}
+	occupationChangedChan <- occupationChanged
 }
 
 func parse(lines []string) map[int]map[int]*Place {
