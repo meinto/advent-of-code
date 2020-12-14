@@ -91,18 +91,19 @@ func processSeat(
 	occupationChanged := false
 	p := seats[y][x]
 	if p.Type == SEAT {
-		lookAround := 1
 		matchInDirection := []int{-1, -1, -1, -1, -1, -1, -1, -1, -1}
-		for {
-			if maxLookAround > 0 && lookAround > maxLookAround {
-				break
-			} else if maxLookAround < 0 &&
-				y+lookAround > maxY &&
-				y-lookAround < 0 &&
-				x+lookAround > maxX &&
-				x-lookAround < 0 {
-				break
+		emptySeatsCount := 0
+		occupiedSeatsCount := 0
+
+		lookAroundBondary := maxLookAround
+		if maxLookAround < 0 {
+			maxXY := maxY
+			if maxX > maxY {
+				maxXY = maxX
 			}
+			lookAroundBondary = maxXY
+		}
+		for lookAround := 1; lookAround <= lookAroundBondary; lookAround++ {
 			direction := 0
 			for yi := y - lookAround; yi <= y+lookAround; yi += lookAround {
 				for xi := x - lookAround; xi <= x+lookAround; xi += lookAround {
@@ -114,31 +115,31 @@ func processSeat(
 						place := seats[yi][xi]
 						if place.Type == SEAT && place.State == OCCUPIED {
 							if matchInDirection[direction] < 0 {
+								occupiedSeatsCount++
 								matchInDirection[direction] = 1
 							}
 						} else if place.Type == SEAT && place.State == EMPTY {
 							if matchInDirection[direction] < 0 {
+								emptySeatsCount++
 								matchInDirection[direction] = 0
 							}
 						}
+						if occupiedSeatsCount >= maxAdjacentOccupiedSeats || emptySeatsCount >= 8 {
+							break
+						}
+					}
+					if occupiedSeatsCount >= maxAdjacentOccupiedSeats || emptySeatsCount >= 8 {
+						break
 					}
 					direction++
 				}
 			}
-			lookAround++
 		}
 
-		adjacentOccupiedSeats := 0
-		for _, match := range matchInDirection {
-			if match > 0 {
-				adjacentOccupiedSeats += match
-			}
-		}
-
-		if adjacentOccupiedSeats == 0 && p.State != OCCUPIED {
+		if occupiedSeatsCount == 0 && p.State != OCCUPIED {
 			occupationChanged = true
 			p.NextState = OCCUPIED
-		} else if adjacentOccupiedSeats >= maxAdjacentOccupiedSeats && p.State != EMPTY {
+		} else if occupiedSeatsCount >= maxAdjacentOccupiedSeats && p.State != EMPTY {
 			occupationChanged = true
 			p.NextState = EMPTY
 		}
