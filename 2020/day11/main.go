@@ -26,8 +26,6 @@ func main() {
 	content, _ := ioutil.ReadFile("input.txt")
 	lines := strings.Split(string(content), "\n")
 
-	parse(lines)
-
 	seats := parse(lines)
 
 	fmt.Println("occupied seats 1:", calcOccupiedSeats(lines, seats, 1, 4))
@@ -48,9 +46,9 @@ func calcOccupiedSeats(lines []string, seats map[int]map[int]*Place, maxLookArou
 						if maxLookAround > 0 && lookAround > maxLookAround {
 							break
 						} else if maxLookAround < 0 &&
-							y+lookAround > len(lines) &&
+							y+lookAround > len(lines)-1 &&
 							y-lookAround < 0 &&
-							x+lookAround > len(line) &&
+							x+lookAround > len(line)-1 &&
 							x-lookAround < 0 {
 							break
 						}
