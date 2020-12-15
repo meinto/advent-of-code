@@ -18,6 +18,9 @@ func main() {
 	lines := strings.Split(string(content), "\n")
 
 	possibleDirections := []rune{'E', 'S', 'W', 'N'}
+	northSouthStrings := map[int]string{-1: "south", 1: "north"}
+	eastWestStrings := map[int]string{-1: "east", 1: "west"}
+
 	coordinates := make(map[int]int)
 	currentDirection := 'E'
 	for _, line := range lines {
@@ -64,17 +67,11 @@ func main() {
 
 	northSouth := coordinates[0]
 	eastWest := coordinates[1]
-	if northSouth > 0 {
-		fmt.Println("north:", northSouth)
-	}
-	if northSouth <= 0 {
-		fmt.Println("south:", -northSouth)
-	}
-	if eastWest > 0 {
-		fmt.Println("west:", eastWest)
-	}
-	if eastWest <= 0 {
-		fmt.Println("east:", -eastWest)
-	}
-	fmt.Println("sum:", math.Abs(float64(northSouth))+math.Abs(float64(eastWest)))
+	fmt.Println(northSouthStrings[northSouth/abs(northSouth)], ":", abs(northSouth))
+	fmt.Println(eastWestStrings[eastWest/abs(eastWest)], ":", abs(eastWest))
+	fmt.Println("sum:", abs(northSouth)+abs(eastWest))
+}
+
+func abs(in int) int {
+	return int(math.Abs(float64(in)))
 }
