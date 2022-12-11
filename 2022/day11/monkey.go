@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 )
 
@@ -17,13 +16,11 @@ type monkey struct {
 	Inpsections      int
 }
 
-func (m *monkey) Inspect(reducedWorryLvl bool) {
+func (m *monkey) Inspect(reduceWorryLvl func(int) int) {
 	for _, item := range m.StartingItems {
 		m.Inpsections++
 		new := m.Operation(item)
-		if reducedWorryLvl {
-			new = m.Bored(new)
-		}
+		new = reduceWorryLvl(new)
 		m.Throw(new)
 	}
 	m.StartingItems = []int{}
@@ -55,10 +52,6 @@ func (m *monkey) Operation(old int) (new int) {
 	}
 
 	return new
-}
-
-func (m *monkey) Bored(old int) int {
-	return int(math.Floor(float64(old) / 3))
 }
 
 func (m *monkey) Test(item int) (nextMonkey int) {

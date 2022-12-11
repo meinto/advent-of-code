@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"sort"
@@ -16,11 +17,11 @@ type controller struct {
 	Round   int
 }
 
-func (c *controller) Play(maxRounds int, reducedWorryLvl, logRounds bool) {
+func (c *controller) Play(maxRounds int, reduceWorryLvl func(int) int, logRounds bool) {
 	if c.Round < maxRounds {
 		c.Round++
 		for _, monkey := range c.Monkeys {
-			monkey.Inspect(reducedWorryLvl)
+			monkey.Inspect(reduceWorryLvl)
 		}
 		if logRounds {
 			fmt.Printf("round %d\n", c.Round)
@@ -28,7 +29,7 @@ func (c *controller) Play(maxRounds int, reducedWorryLvl, logRounds bool) {
 				monkey.toString()
 			}
 		}
-		c.Play(maxRounds, reducedWorryLvl, logRounds)
+		c.Play(maxRounds, reduceWorryLvl, logRounds)
 	}
 }
 
@@ -42,6 +43,18 @@ func (c *controller) GetMostActive() (inspections []int) {
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(inspections)))
 	return inspections
+}
+
+func (c *controller) ReduceWorryLvl_1(old int) int {
+	return int(math.Floor(float64(old) / 3))
+}
+
+func (c *controller) ReduceWorryLvl_2(old int) int {
+	divisor := 1
+	for _, monkey := range c.Monkeys {
+		divisor *= monkey.TestDivider
+	}
+	return old % divisor
 }
 
 func NewController(filepath string) (c *controller) {
